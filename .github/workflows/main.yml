@@ -48,6 +48,18 @@ jobs:
       run: |
         xcodebuild -alltargets -configuration Release | xcpretty && exit ${PIPESTATUS[0]}
 
+    - name: Build specified BlueToolFixup fork
+      run: |
+        set -euo pipefail
+        git clone https://github.com/orangewoker/BrcmPatchRAM.git BlueToolSource
+        cd BlueToolSource
+        git checkout 65389020769837e92e9fb939bac34bd9a3e25bb2
+        ln -s ../MacKernelSDK MacKernelSDK
+        ln -s ../Lilu.kext Lilu.kext
+        xcodebuild -target BlueToolFixup -configuration Release ARCHS=x86_64 ONLY_ACTIVE_ARCH=NO CODE_SIGNING_ALLOWED=NO
+        test -f build/Release/BlueToolFixup.kext/Contents/MacOS/BlueToolFixup
+        /usr/bin/ditto -c -k --keepParent build/Release/BlueToolFixup.kext ../build/Release/BlueToolFixup.zip
+
     - name: Upload to Artifacts
       uses: actions/upload-artifact@v4
       with:
